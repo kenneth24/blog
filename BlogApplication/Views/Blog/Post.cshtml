@@ -1,0 +1,59 @@
+﻿@*@model BlogApplication.Models.PostViewModel
+
+@{
+    ViewBag.Title = "Post";
+}
+
+<h2>Post</h2>*@
+
+@model BlogApplication.Models.PostViewModel
+@using BlogApplication.Controllers
+@using Microsoft.AspNet.Identity
+@{
+    ViewBag.Title = Model.Title;
+    if (Model.PostTags != null)
+    {
+        ViewBag.Keywords = string.Join(" ", Model.PostTags.Select(t => t.Name).ToArray());
+    }
+    ViewBag.Description = Model.Meta;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Scripts
+{
+    <script src="~/Scripts/view.js"></script>
+    <script src="~/ckeditor/ckeditor.js"></script>
+}
+
+
+<div id="postScroll">
+    <div class="postContainer">
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="postMenu">
+                <div class="postMenuSub">
+                    <a href="@Url.Action("EditPost","Blog",new {slug = Model.UrlSeo })" class="btn btn-primary">Edit</a>
+                    <a href="@Url.Action("DeletePost","Blog",new {postid = Model.ID })" class="btn btn-danger">Delete</a>
+                </div>
+            </div>
+        }
+        
+        <div class="postTitle"><h2>@Model.Title</h2></div>
+        
+     
+        @if (Model.Videos != null)
+        {
+            foreach (var video in Model.Videos)
+            {
+                <div class="postVideo">
+                    <iframe width="560" height="315" src="@video.VideoUrl" frameborder="0" allowfullscreen></iframe>
+                </div>
+            }
+        }
+        @{
+            BlogController blgCtrl = new BlogController();
+        }
+        <div class="postBody">@Html.Raw(Model.Body)</div>
+    </div>
+    @* Render Comments PartialView in the post View *@
+    @{Html.RenderPartial("Comments");}
+</div>

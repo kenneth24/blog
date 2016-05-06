@@ -1,0 +1,49 @@
+﻿@model BlogApplication.Models.CommentViewModel
+@using BlogApplication.Controllers
+@using Microsoft.AspNet.Identity
+@{
+    // this is same as commentview. the only difference is we're using (parent) replies instead of comments
+    BlogController blgCtrl = new BlogController();
+    var parentReplies = Model.Comment.Replies;
+    if (parentReplies != null)
+    {
+        foreach (var pReply in parentReplies)
+        {
+            if (pReply.ParentReplyId == null)
+            {
+                var prDetails = blgCtrl.ReplyDetails(pReply.Id);
+                
+                <div class="parentReply" id="@prDetails[4]">
+                    <div class="mainreply" id="@prDetails[5]">
+                        <div class="userImage"><img src="@prDetails[1]" height="50" width="50" /></div>
+                        <div class="commentUserName"><strong>@prDetails[0]</strong>&nbsp;&nbsp;<span class="cmntTime">-- @prDetails[2]</span></div>
+                        <div class="commentDate">@prDetails[3]</div>
+                        <div class="commentExp" id="@prDetails[7]">
+                            <div class="commentBody">@Html.Raw(pReply.Body)</div>
+                            @if (!blgCtrl.ReplyDeleteCheck(pReply.Id))
+                            {
+                                <div class="replySubMenu">
+
+                                    @*<a style="cursor:pointer;" class="comReplyParent" id="@prDetails[14]">Reply</a>*@
+
+                                    @if (pReply.UserName == User.Identity.GetUserName())
+                                    {
+                                        <table class="commentMenu" id="@prDetails[16]">
+                                            <tr>
+                                                <td><a href="@Url.Action("EditReply", "Blog", new { replyid = pReply.Id })" title="Edit">Edit></a></td>
+                                                <td><a href="@Url.Action("DeleteReply", "Blog", new { replyid = pReply.Id })" title="Delete">Delete</a></td>
+                                            </tr>
+                                        </table>
+                                    }
+                                </div>
+
+                                
+                            }
+                        </div>
+                    </div>
+
+                </div>
+            }
+        }
+    }
+}

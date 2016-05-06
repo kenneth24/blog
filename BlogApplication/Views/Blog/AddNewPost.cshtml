@@ -1,0 +1,59 @@
+﻿@model BlogApplication.Models.PostViewModel
+@{
+    ViewBag.Title = "Add New Post";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using (Html.BeginForm("AddNewPost", "Blog", FormMethod.Post, new { role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="editPostContainer">
+
+        <h3>Add New Post</h3>
+
+        <form data-toggle="validator" role="form">
+            <div class="form-group" style="display: none;">
+                <label for="inputName" class="control-label">ID</label>
+                @Html.TextBoxFor(m => m.ID, new { @class = "editPostIdInp", @readonly = "readonly" })
+            </div>
+
+            <div class="form-group">
+                <label for="title" class="control-label">Title</label>
+                @Html.TextBoxFor(m => (m.Title), new { @class = "form-control", @id = "title", @required = "required" })
+            </div>
+
+            @*<div class="form-group">
+                <label for="category" class="control-label">Category</label>
+                @Html.TextBoxFor(m => (m.Categories), new { @class = "form-control", @id = "category", @required = "required" })
+            </div>*@
+
+            <div class="form-group">
+                <label for="meta" class="control-label">Meta</label>
+                @Html.TextBoxFor(m => m.Meta, new { @class = "form-control", @id = "meta", @required = "required" })
+            </div>
+
+            <div class="form-group">
+                <label for="url" class="control-label">UrlSeo</label>
+                @Html.TextBoxFor(m => m.UrlSeo, new { @class = "form-control", @id = "url", @required = "required" })
+            </div>
+
+            <div class="form-group" style="width: 50%">
+                <label for="shortDescription" class="control-label">Short Description</label>
+                @Html.TextAreaFor(m => m.ShortDescription, new { @class="ckEd", @id = "editor1", Value = Model.ShortDescription })
+                <script>
+                    CKEDITOR.replace('editor1');
+                </script>
+            </div>
+
+            <div class="form-group" style="width: 50%">
+                <label for="body" class="control-label">Body</label>
+                @Html.TextAreaFor(m => m.Body, new { @class = "ckEd", @id = "editor2", Value = Model.Body })
+                <script>
+                    CKEDITOR.replace('editor2');
+                </script>
+            </div>
+
+            <input class="btn btn-primary pull-left" type="submit" value="Submit" />
+        </form>
+    </div>
+}
+

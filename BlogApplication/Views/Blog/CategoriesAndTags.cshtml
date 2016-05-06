@@ -1,0 +1,37 @@
+﻿@using BlogApplication.Controllers
+@{
+    ViewBag.Title = "Categories";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var categories = BlogController.checkCatList;
+
+}
+@using (Html.BeginForm("RemoveCatAndTag", "Blog", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <h3><span class="forMarginTop">Categories</span></h3>
+
+    <table class="catsAndTags">
+
+        <tr>
+            <td><a href="@Url.Action("AddNewCategory", "Blog", new { callfrompost = false })" class="btn btn-primary">Add New Category</a></td>
+        </tr>
+        <tr>
+            <td>
+                @foreach (var cat in categories)
+                {
+                    <div>
+                        <input type="checkbox" name="categoryNames" value="@cat.Category.Name" /> @cat.Category.Name
+                    </div>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input class="btn btn-danger" type="submit" value="Remove" />
+            </td>
+        </tr>
+    </table>
+
+
+}

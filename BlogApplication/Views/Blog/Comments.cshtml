@@ -1,0 +1,124 @@
+﻿@model PostViewModel
+@using BlogApplication.Models
+@using BlogApplication.Controllers
+@using Microsoft.AspNet.Identity
+@using System.Web
+<div class="bottomContainer">
+    <div class="commentContainer">
+
+        <hr />
+        @if (Request.IsAuthenticated) // if user is signed in, ---
+        {
+            var imgUrl = Url.Content("~/Content/images/profile/" + User.Identity.GetUserName() + ".png") + "?time=" + DateTime.Now.ToString();
+            BlogController blgCtrl = new BlogController();
+            var ncmDetails = blgCtrl.NewCommentDetails(User.Identity.GetUserName());
+            <table class="newComment">
+                <tr>
+                    @* show new comment textarea, and what i use here is ckeditor *@
+                    <td style="width:50px;vertical-align: top;"><div class="comImg"><img src="@imgUrl" height="50" width="50" /></div></td>
+                    <td style="vertical-align:middle; min-height:40px;" class="comText" id="@ncmDetails[0]">
+                        @using (Html.BeginForm("NewComment", "Blog", FormMethod.Post, new { @class = "comTextdivParent", role = "form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <textarea name="commentBody" id="@ncmDetails[1]"></textarea>
+                            <script>
+                                CKEDITOR.replace('@ncmDetails[1]',
+                                    {
+                                        customConfig: '/Scripts/ckEditorConfig1.js'
+                                    });
+
+                            </script>
+                            <div class="comTextSub">
+                                <input value="@Model.UrlSeo" name="slug" type="hidden" />
+                                <input value="@Model.ID" name="postid" type="hidden" />
+                                <input value="@User.Identity.GetUserName()" name="comUserName" type="hidden" />
+                                <button type="submit" class="btn btn-primary pull-right">Submit</button>
+                            </div>
+                        }
+                    </td>
+                </tr>
+            </table>
+        }
+        @foreach (var comment in Model.Comments)
+        {
+            BlogController blgCtrl = new BlogController();
+            var cmDetails = blgCtrl.CommentDetails(comment); // create unique id for elements
+                                                             //var likes = blgCtrl.LikeDislikeCount("commentlike", comment.Id);
+                                                             //var dislikes = blgCtrl.LikeDislikeCount("commentdislike", comment.Id);
+                                                             //var twshareUrl = "https://twitter.com/intent/tweet?text=" + comment.Body + "  -- " + comment.UserName + "&url=" + Url.Encode(HttpContext.Current.Request.Url.AbsoluteUri);
+
+
+            <div class="userComment" id="@cmDetails[4]">
+                <div class="maincomment" id="@cmDetails[5]">
+
+                    @* user's image username and date of the comment of being sent *@
+                    <div class="userImage"><img src="@cmDetails[1]" height="50" width="50" /></div>
+                    <div class="commentUserName"><strong>@cmDetails[0]</strong>&nbsp;&nbsp;<span class="cmntTime">-- @cmDetails[2]</span></div>
+                    <div class="commentDate">@cmDetails[3]</div>
+                    @* comment body *@
+                    <div class="commentExp" id="@cmDetails[7]"> 
+                        <div class="commentBody">@Html.Raw(comment.Body)</div>
+                        @* if comment is not deleted,   *@
+                        @if (!blgCtrl.CommentDeleteCheck(comment.Id))
+                        {
+                            //show the menu for like / dislike, reply, share
+                            <div class="replySubMenu">
+                                
+                                <a style="cursor:pointer;" class="comReplyParent" id="@cmDetails[14]">Reply</a>
+                                
+
+                                @*and if comments belong to the signed in user show menu for edit/delete*@
+                                @if (comment.UserName == User.Identity.GetUserName())
+                                {
+                                    <table class="commentMenu" id="@cmDetails[16]">
+                                        <tr>
+                                            <td><a href="@Url.Action("EditComment", "Blog", new { commentid = comment.Id })"  title="Edit">Edit></a></td>
+                                            <td><a href="@Url.Action("DeleteComment", "Blog", new { commentid = comment.Id })" title="Delete">Delete</a></td>
+                                        </tr>
+                                    </table>
+                                }
+                            </div>
+
+                            // if user is signed in open a new reply textarea when clicked reply link
+                            if (Request.IsAuthenticated)
+                            {
+                                var imgUrl = Url.Content("~/Content/images/profile/" + User.Identity.GetUserName() + ".png") + "?time=" + DateTime.Now.ToString();
+                                <table class="newComment collapseComment" id="">
+                                    <tr>
+                                        <td style="width:50px;vertical-align: top;"><div class="comImg"><img src="@imgUrl" height="50" width="50" /></div></td>
+                                        <td style="vertical-align:middle; min-height:40px;" class="comText" id="@cmDetails[12]">
+                                            @using (Html.BeginForm("NewParentReply", "Blog", FormMethod.Post, new { @class = "comTextdivParent", role = "form" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <textarea name="replyBody" id="@cmDetails[13]"></textarea>
+                                                <script>
+                                                    CKEDITOR.replace('@cmDetails[13]',
+                                                        {
+                                                            customConfig: '/Scripts/ckEditorConfig1.js'
+                                                        });
+                                                </script>
+                                                <div class="comTextSub">
+                                                    @* pass comment id, post id, post url slug and username to the controller when submit *@
+                                                    <input value="@comment.Id" name="commentid" type="hidden" />
+                                                    <input value="@Model.UrlSeo" name="slug" type="hidden" />
+                                                    <input value="@Model.ID" name="postid" type="hidden" />
+                                                    <input value="@User.Identity.GetUserName()" name="comUserName" type="hidden" />
+                                                    <button type="submit" class="btn btn-primary pull-right">Submit</button>
+                                                </div>
+                                            }
+                                        </td>
+                                    </tr>
+                                </table>
+                            }
+                        }
+                    </div>
+                </div>
+                @* Render replies PartialView *@
+                <div class="commentreplies" id="@cmDetails[6]">
+                    @{Html.RenderPartial("Replies", new CommentViewModel(comment));}
+                </div>
+            </div>
+
+                        }
+    </div>
+</div>

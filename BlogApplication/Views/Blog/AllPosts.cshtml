@@ -1,0 +1,102 @@
+﻿@model PagedList.IPagedList<BlogApplication.Models.AllPostsViewModel>
+@using BlogApplication.Controllers
+@using PagedList.Mvc;
+<link href="~/Content/css/PagedList.css" rel="stylesheet" />
+@{
+    ViewBag.Title = "AllPosts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var categories = BlogController.checkCatList;
+
+}
+<div class="postsSearch">
+
+    <div class="postsFilter">
+        @using (Html.BeginForm("AllPosts", "Blog", FormMethod.Get))
+            {
+            @* pass current sort and search parameters to the controller *@
+            <input type="hidden" name="searchString" value="@ViewBag.CurrentSearchString" />
+        }
+    </div>
+
+    @using (Html.BeginForm("AllPosts", "Blog", FormMethod.Get, new { @class = "allPostsForm" }))
+    {
+        // keep the filters when using searchbox
+        if (ViewBag.CurrentSearchCategory != null)
+        {
+            foreach (var item in ViewBag.CurrentSearchCategory)
+            {
+                <input type="hidden" name="searchCategory" value="@item" />
+            }
+        }
+        if (ViewBag.CurrentSearchTag != null)
+        {
+            foreach (var item in ViewBag.CurrentSearchTag)
+            {
+                <input type="hidden" name="searchTag" value="@item" />
+            }
+        }
+        <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
+        <input type="search" class="form-control" name="searchString" value="@ViewBag.CurrentSearchString" placeholder="Search..." />
+    }
+
+</div>
+
+<table class="postsTable">
+    <tr>
+        <th>Date</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Categories</th>
+        @if (User.IsInRole("Admin"))
+            {
+            <th>Edit</th>
+            <th>Delete</th>
+        }
+    </tr>
+    @foreach (var post in Model)
+    {
+        <tr>
+            <td>@post.Date.ToShortDateString()</td>
+            <td><a href="@Url.Action("Post","Blog",new {slug = @post.UrlSlug })" title="Title">@post.Title</a></td>
+            <td>@Html.Raw(post.Description)</td>
+            <td>
+                @foreach (var cat in post.PostCategories)
+                {
+                    <div>&#9679;@cat.Name</div>
+                }
+            </td>
+
+            @if (User.IsInRole("Admin"))
+                {
+                <td><a href="@Url.Action("EditPost","Blog",new {slug = post.UrlSlug })" title="Edit">Edit</a></td>
+                <td><a href="@Url.Action("DeletePost","Blog",new {postid = post.PostId })" title="Delete">Delete</a></td>
+            }
+        </tr>
+    }
+</table>
+@* keep the filter while navigating between pages *@
+<div id="spacer"></div>
+<div class="paging">
+    <div class="pagenum">
+        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+    </div>
+    @{
+        List<string> searchCatList = new List<string>();
+
+        if (ViewBag.CurrentSearchCategory != null)
+        {
+            foreach (var item in ViewBag.CurrentSearchCategory)
+            {
+                searchCatList.Add(item);
+            }
+        }
+    }
+    @if (ViewBag.CurrentSearchCategory != null)
+    {
+        @Html.PagedListPager(Model, page => Url.Action("AllPosts", "Blog", new { page, sortOrder = ViewBag.CurrentSort, searchString = ViewBag.SearchString }) + "&" + string.Join("&", searchCatList.Select(x => "searchCategory=" + x)))
+    }
+    else
+    {
+        @Html.PagedListPager(Model, page => Url.Action("AllPosts", "Blog", new { page, sortOrder = ViewBag.CurrentSort, searchString = ViewBag.SearchString }))
+    }
+</div>

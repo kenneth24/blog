@@ -1,0 +1,50 @@
+﻿@model BlogApplication.Models.PostViewModel
+@using BlogApplication.Models
+@{
+    ViewBag.Title = "AddCategoryToPost";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using (Html.BeginForm("AddCategoryToPost", "Blog", FormMethod.Post, new { @class = "addCatForm", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+
+    <h3><span class="forMarginTop">Categories</span></h3>
+
+    <table class="addCatCont">
+        <tr>
+            <td><a href="@Url.Action("AddNewCategory", "Blog", new { postid = Model.ID, callfrompost=true})" class="btn btn-primary">Add New Category</a></td>
+            
+        </tr>
+        <tr>
+            
+            <td>
+                @*// display checkboxes*@
+                @for (int i = 0; i < Model.Categories.Count(); i++)
+                {
+                    BlogDbContext db = new BlogDbContext();
+                    string catId = Model.Categories[i].Id;
+                    bool check = db.PostCategories.Where(x => x.CategoryId == catId && x.PostId == Model.ID).Select(x => x.Checked).FirstOrDefault();
+                    if (check)
+                    {
+                        Model.Categories[i].Checked = true;
+                        @Html.CheckBoxFor(m => m.Categories[i].Checked)
+                    }
+                    else
+                    {
+                        @Html.CheckBoxFor(m => m.Categories[i].Checked)
+                    }
+
+                    @Html.LabelFor(m => m.Categories[i].Checked, Model.Categories[i].Name)
+                    @Html.HiddenFor(m => m.Categories[i].Id)<br />
+                }
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(m => m.ID, new { type = "hidden" })
+                <input class="btn btn-primary" type="submit" value="Add Category to post" />
+            </td>
+        </tr>
+    </table>
+}
+
